@@ -1,9 +1,12 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const moment = require('moment-timezone');
 
 const config = require('./config');
 const router = require('./routes/route');
+
+moment.tz.setDefault('Africa/Addis_Ababa')
 
 const app = express();
 
