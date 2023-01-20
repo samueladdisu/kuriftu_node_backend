@@ -84,10 +84,74 @@ const tempRes = async (data) => {
   }
 }
 
+/**
+ * 
+ * @param {string} roomType Bishoftu room type
+ * @returns row of the room type
+ */
+
+const getBishoftuPrice = async (roomType) => {
+  try {
+    const result = await db.execute(`SELECT * FROM room_type WHERE type_name = ?`, [roomType]);
+    return result[0];
+  } catch (error) {
+    return error
+  }
+}
+
+/**
+ * 
+ * @param {string} roomType Awash room type
+ * @returns row of the room type
+ */
+
+const getAwashPrice = async (roomType) => {
+  try {
+    const result = await db.execute(`SELECT * FROM awash_price WHERE name = ?`, [roomType]);
+    return result[0];
+  } catch (error) {
+    return error
+  }
+}
+
+/**
+ * 
+ * @param {string} roomType Entoto room type
+ * @returns row of the room type
+ */
+
+const getEntotoPrice = async (roomType) => {
+  try {
+    const result = await db.execute(`SELECT * FROM entoto_price WHERE name = ?`, [roomType]);
+    return result[0];
+  } catch (error) {
+    return error
+  }
+}
+
+/**
+ * 
+ * @param {string} roomType Tana room type
+ * @returns row of the room type
+ */
+
+const getTanaPrice = async (roomType) => { 
+  try {
+    const result = await db.execute(`SELECT * FROM tana_price WHERE name = ?`, [roomType]);
+    return result[0];
+  } catch (error) {
+    return error
+  }
+}
+
 
 
 module.exports = {
   getAvailableRooms,
+  getBishoftuPrice,
+  getAwashPrice,
+  getEntotoPrice,
+  getTanaPrice,
   releaseRoom,
   holdRoom,
   tempRes

@@ -1,4 +1,4 @@
-const { getAvailableRooms, releaseRoom, holdRoom, tempRes } = require('../../models/user/rooms.model');
+const { getAvailableRooms, releaseRoom, holdRoom, tempRes, getBishoftuPrice, getAwashPrice, getEntotoPrice, getTanaPrice } = require('../../models/user/rooms.model');
 
 
 /**
@@ -14,14 +14,14 @@ exports.filterRoom = async (req, res) => {
   try {
     const rooms = await getAvailableRooms(req.query.checkin, req.query.checkout, req.query.location);
 
-    let roomAcc_temp = '';
-    let roomLocation = '';
-    let dataCount = [];
+    var roomAcc_temp = '';
+    var roomLocation = '';
+    var dataCount = [];
 
     if (rooms.length > 0) {
-      let merged_array = rooms;
-      let data = []
-      for (let key in merged_array) {
+      var merged_array = rooms;
+      var data = []
+      for (var key in merged_array) {
         if (roomAcc_temp === '' || roomLocation === '') {
           roomAcc_temp = merged_array[key]["room_acc"];
           roomLocation = merged_array[key]["room_location"];
@@ -95,6 +95,15 @@ exports.holdRoom = async (req, res) => {
 
 };
 
+/**
+ * 
+ * @param {Reques} req 
+ * @param {Response} res 
+ * @returns 
+ * @description temporary reservation until payment is confirmed
+ * @todo add payment confirmation
+ * @todo add email confirmation
+ */
 
 exports.tempRes = async (req, res) => {
   if (!req.body.data) return res.status(400).send("Bad Request");
@@ -106,3 +115,129 @@ exports.tempRes = async (req, res) => {
   }
 }
 
+
+exports.calculateRoomPrice = async (req, res) => {
+  console.log(req.body.cart);
+  if (!req.body.cart) return res.status(400).send("Bad Request");
+  const cart = req.body.cart;
+
+  try {
+
+    var promo = '';
+    var price = 0.00;
+    var dbRack = 0.00;
+    var dbWeekend = 0.00;
+    var dbWeekdays = 0.00;
+    var dbMember = 0.00;
+    var arrayTemp = [];
+
+    // Single occupancy rate
+    var sRack = 0.00;
+    var sWeekend = 0.00;
+    var sWeekdays = 0.00;
+    var sMember = 0.00;
+
+    for (const val of cart) {
+      var cartRoomType = val.room_acc;
+      var ad = parseInt(val.adults);
+      var kid = parseInt(val.kids);
+      var teen = parseInt(val.teens);
+      var location = val.room_location;
+
+      var days = [];
+      var start = new Date(val.checkin);
+      var end = new Date(val.checkout);
+
+      while (start < end) {
+        days.push(start.toLocaleString('en-us', { weekday: 'long' }));
+        start.setDate(start.getDate() + 1);
+      }
+
+      if (location === "Bishoftu") {
+        const resultType = await getBishoftuPrice(cartRoomType);
+
+        for (const rowType of resultType) {
+          // double occupancy rate
+          var typeLocation = rowType.type_location;
+          dbRack = parseFloat(rowType.d_rack_rate);
+          dbWeekend = parseFloat(rowType.d_weekend_rate);
+          dbWeekdays = parseFloat(rowType.d_weekday_rate);
+          dbMember = parseFloat(rowType.d_member_rate);
+
+          // Single occupancy rate
+          sRack = parseFloat(rowType.s_rack_rate);
+          sWeekend = parseFloat(rowType.s_weekend_rate);
+          sWeekdays = parseFloat(rowType.s_weekday_rate);
+          sMember = parseFloat(rowType.s_member_rate);
+        }
+
+        for (const day of days) {
+          if (cartRoomType === "Loft Family Room") {
+            price += calculateLoft(kid, teen, dbRack, dbMember, promo);
+          } else if (cartRoomType === "Presidential Suite Family Room") {
+            switch (day) {
+              case "Friday":
+                price += calculatePre(kid, teen, dbWeekend, dbMember, promo);
+                break;
+              case "Saturday":
+                price += calculatePre(kid, teen, dbRack, dbMember, promo);
+                break;
+              default:
+                price += calculatePre(kid, teen, dbWeekdays, dbMember, promo);
+                break;
+            }
+          } else {
+            switch (day) {
+              case "Friday":
+                price += calculatePrice(ad, kid, teen, sWeekend, dbWeekend, dbMember, sMember, promo);
+                break;
+              case "Saturday":
+                price += calculatePrice(ad, kid, teen, sRack, dbRack, dbMember, sMember, promo);
+                break;
+              default:
+                price += calculatePrice(ad, kid, teen, sWeekdays, dbWeekdays, dbMember, sMember, promo);
+                break;
+            }
+          }
+        }
+      } else if (location === 'awash') {
+        var Bored = val.reservationBoard;
+        var result_type = await getAwashPrice(cartRoomType);
+
+        var row_type = result_type[0];
+        price = calculatePriceAwash(ad, kid, teen, Bored, days, row_type);
+      } else if (location == 'entoto') {
+        var result_type = await getEntotoPrice(cartRoomType);
+
+        var row_type = result_type[0];
+        var double = row_type.double_occ;
+        var single = row_type.single_occ;
+
+        for (var day of days) {
+          if (cartRoomType == "Presidential Family Room") {
+            price += calculatePreEntoto(kid, teen, double, promo);
+          } else {
+            price += calculateEntoto(ad, kid, teen, double, single, promo);
+          }
+        }
+      } else if (location === "Lake tana") {
+        const result_type = await getTanaPrice(cartRoomType);
+        const row_type = result_type[0];
+        const double = row_type.double_occ;
+        const single = row_type.single_occ;
+
+        days.forEach((day) => {
+          price += calculateEntoto(ad, kid, teen, double, single, promo);
+        });
+      }
+      arrayTemp.push(price);
+      price = 0.00;
+    }
+    res.status(200).send({ price: arrayTemp })
+  } catch (error) {
+    res.status(500).json({ error: error });
+  }
+
+ 
+
+}

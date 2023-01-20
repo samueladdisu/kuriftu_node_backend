@@ -1,5 +1,5 @@
 const express = require('express');
-const { filterRoom, releaseRoom, holdRoom, tempRes } = require('../controllers/user/rooms.controller');
+const { filterRoom, releaseRoom, holdRoom, tempRes, calculateRoomPrice } = require('../controllers/user/rooms.controller');
 const { getPromoCode } = require('../controllers/user/promo.controller');
 
 const router = express.Router();
@@ -13,7 +13,7 @@ router.post("/releaseRoom", releaseRoom);
 router.post("/holdRoom", holdRoom)
 
 router.post("/tempRes", tempRes);
-
+router.post("/calculatePrice", calculateRoomPrice)
 router.post("/getPromoCode", getPromoCode);
 
 
