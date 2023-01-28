@@ -1,0 +1,35 @@
+[{
+  "adults": "2",
+  "checkin": "2023-01-21",
+  "checkout": "2023-01-22",
+  "cnt": 21,
+  "kids": "0",
+  "reservationBoard": "",
+  "room_acc": "Deluxe Lake Front king size bed",
+  "room_id": "71",
+  "room_image": "2.webp",
+  "room_location": "Bishoftu",
+  "room_number": "101",
+  "room_occupancy": "2",
+  "room_price": "219.85",
+  "room_status": "Not_booked",
+  "teens": "0"
+},
+
+{
+  "adults": "2",
+  "checkin": "2023-01-21",
+  "checkout": "2023-01-22",
+  "cnt": 3,
+  "kids": "0",
+  "reservationBoard": "",
+  "room_acc": "Deluxe Lake Front king size bed",
+  "room_id": "72",
+  "room_image": "2.webp",
+  "room_location": "Bishoftu",
+  "room_number": "102",
+  "room_occupancy": "2",
+  "room_price": "219.85",
+  "room_status": "Not_booked",
+  "teens": "0"
+}]

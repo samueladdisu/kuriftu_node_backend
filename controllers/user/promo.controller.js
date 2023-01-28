@@ -3,9 +3,10 @@ const db = require("../../util/db");
 
 /**
  * 
- * @param {Request} req 
+ * @route POST /getPromoCode
+ * @param {Request} req req.body.promo & req.body.price
  * @param {Response} res 
- * @returns price after discount
+ * @returns price after discount or price if promo code is expired
  */
 
 exports.getPromoCode = async (req, res) => {
@@ -28,5 +29,6 @@ exports.getPromoCode = async (req, res) => {
     res.status(200).send({price: row});
   } catch (error) {
     console.log(error);
+    res.status(200).send({error: error});
   }
 }

@@ -1,8 +1,27 @@
 const { getAvailableRooms, releaseRoom, holdRoom, tempRes, getBishoftuPrice, getAwashPrice, getEntotoPrice, getTanaPrice } = require('../../models/user/rooms.model');
 
+const { calculatePrice, calculateLoft, calculatePre, calculatePriceAwash, calculatePreEntoto, calculateEntoto } = require('../../util/helperFunctions');
+
+// form validation library
+
+const Joi = require('joi')
+
+const schema = Joi.object().keys({
+  firstName: Joi.string().alphanum().min(3).max(30).required(),
+  lastName: Joi.string().alphanum().min(3).max(30).required(),
+  phoneNumber: Joi.string().regex(/^\d{10,}$/).required(),
+  email: Joi.string().email({ minDomainSegments: 2 }).required(),
+  country: Joi.string().required(),
+  address: Joi.string().min(10).max(100).required(),
+  promocode: Joi.string().alphanum().min(6).max(6).optional(),
+  city: Joi.string().required(),
+  specialRequest: Joi.string().max(200).optional(),
+  zip: Joi.string().regex(/^\d{5}$/).required()
+});
 
 /**
  * 
+ * @route GET /filterRoom?checkin={}&checkout={}&location={}
  * @param {*} req 
  * @param {*} res 
  * @returns sorted array by room_acc and room_location for website bookings
@@ -52,7 +71,8 @@ exports.filterRoom = async (req, res) => {
 
 /**
  * 
- * @param {*} req 
+ * @route POST /releaseRoom
+ * @param {*} req req.body.roomId 
  * @param {*} res 
  * @returns msg if room is released
  */
@@ -74,7 +94,8 @@ exports.releaseRoom = async (req, res) => {
 
 /**
  * 
- * @param {*} req 
+ * @route POST /holdRoom
+ * @param {*} req req.body.roomId 
  * @param {*} res 
  * @returns holds room for 5 minutes
  */
@@ -97,7 +118,8 @@ exports.holdRoom = async (req, res) => {
 
 /**
  * 
- * @param {Reques} req 
+ * @route POST /tempRes
+ * @param {Reques} req req.body.data
  * @param {Response} res 
  * @returns 
  * @description temporary reservation until payment is confirmed
@@ -106,13 +128,20 @@ exports.holdRoom = async (req, res) => {
  */
 
 exports.tempRes = async (req, res) => {
-  if (!req.body.data) return res.status(400).send("Bad Request");
+  if (!req.body) return res.status(400).send("Bad Request");
 
-  try {
-    const result = await tempRes(req.body.data);
-  } catch (error) {
+  const {error} = schema.validate(req.body)
 
+  if (error) {
+    return res.status(400).send(error.details[0].message)
+  }else {
+    return res.status(200).send("success")
   }
+  // try {
+  //   const result = await tempRes(req.body.data);
+  // } catch (error) {
+
+  // }
 }
 
 
@@ -235,9 +264,11 @@ exports.calculateRoomPrice = async (req, res) => {
     }
     res.status(200).send({ price: arrayTemp })
   } catch (error) {
+    console.log(error);
     res.status(500).json({ error: error });
   }
 
- 
+
 
 }
+
