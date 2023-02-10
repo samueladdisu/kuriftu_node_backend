@@ -17,7 +17,7 @@ exports.getPromoCode = async (req, res) => {
   const promo = req.body.promo;
   const price = +req.body.price;
 
-  // console.log(typeof price);
+  // console.log(typeof price);r
 
   try {
 

@@ -1,16 +1,22 @@
 const { dailyRes } = require("../../models/admin/daily");
+const moment = require('moment-timezone');
 
-exports.dailyRes = async (req, res) => {
-  try {
-    const result = await dailyRes()
-    const dates = []
-    result.forEach(item => {
-      dates.push(item.res_checkin)
-      
-    });
+exports.dailyRes =  (req, res) => {
 
-    res.status(200).json(dates)
-  } catch (error) {
-    console.log(error);
-  }
+  dailyRes()
+    .then(result => {
+      const dates = []
+      result[0].forEach(item => {
+        if (item.res_checkin !== null) {
+          const checkin = moment.tz(item.res_checkin, "Africa/Addis_Ababa")
+          const formattedDate = checkin.format('YYYY-MM-DD')
+          
+          dates.push(formattedDate)
+        }
+      });
+      res.status(200).json(dates)
+    })
+    .catch(err => {
+      console.log(err);
+    })
 }
