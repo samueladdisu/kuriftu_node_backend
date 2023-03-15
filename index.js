@@ -24,7 +24,7 @@ app.use((error, req, res, next) => {
 
 app.use(router)
 
-const port = config.PORT || 3000;
+const port = config.PORT || 4000;
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);

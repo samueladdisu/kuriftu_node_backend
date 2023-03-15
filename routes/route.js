@@ -1,6 +1,9 @@
 const express = require('express');
 const { filterRoom, releaseRoom, holdRoom, tempRes, calculateRoomPrice, calculateBishoftu } = require('../controllers/user/rooms.controller');
 const { getPromoCode } = require('../controllers/user/promo.controller');
+const {
+  registerCustomer
+} = require('../controllers/user/register.controller')
 const { dailyRes } = require('../controllers/admin/daily');
 
 const router = express.Router();
@@ -17,7 +20,7 @@ router.post("/holdRoom", holdRoom)
 router.post("/tempRes", tempRes);
 router.post("/calculatePrice", calculateRoomPrice)
 router.post("/getPromoCode", getPromoCode);
-
+router.post("/registerCustomer", registerCustomer);
 
 // admin routes
 router.get("/dailyRes", dailyRes)

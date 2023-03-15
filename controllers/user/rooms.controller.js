@@ -1,53 +1,93 @@
-const { getAvailableRooms, releaseRoom, holdRoom, tempRes, getBishoftuPrice, getAwashPrice, getEntotoPrice, getTanaPrice } = require('../../models/user/rooms.model');
+const {
+  getAvailableRooms,
+  releaseRoom,
+  holdRoom,
+  tempRes,
+  getBishoftuPrice,
+  getAwashPrice,
+  getEntotoPrice,
+  getTanaPrice,
+} = require("../../models/user/rooms.model");
 
-const { calculatePrice, calculateLoft, calculatePre, calculatePriceAwash, calculatePreEntoto, calculateEntoto } = require('../../util/helperFunctions');
+const {
+  calculatePrice,
+  calculateLoft,
+  calculatePre,
+  calculatePriceAwash,
+  calculatePreEntoto,
+  calculateEntoto,
+} = require("../../util/helperFunctions");
 
 // form validation library
 
-const Joi = require('joi')
+const Joi = require("joi");
 
 const schema = Joi.object().keys({
   firstName: Joi.string().alphanum().min(3).max(30).required(),
   lastName: Joi.string().alphanum().min(3).max(30).required(),
-  phoneNumber: Joi.string().regex(/^\d{10,}$/).required(),
+  phoneNumber: Joi.string()
+    .regex(/^\+\d{10,}$/)
+    .required(),
   email: Joi.string().email({ minDomainSegments: 2 }).required(),
   country: Joi.string().required(),
   address: Joi.string().min(10).max(100).required(),
-  promocode: Joi.string().alphanum().min(6).max(6).optional(),
+  promocode: Joi.string().min(0).max(6).optional(),
   city: Joi.string().required(),
-  specialRequest: Joi.string().max(200).optional(),
-  zip: Joi.string().regex(/^\d{5}$/).required()
+  specialRequest: Joi.string().min(0).max(200).optional(),
+  zip: Joi.string()
+    .regex(/^\d{5}$/)
+    .required(),
+  paymentMethod: Joi.string().max(30).required(),
+  price: Joi.number().required(),
+  userGID: Joi.string().max(8).required(),
+  roomId: Joi.string().required(),
+  guestInfo: Joi.string().required(),
+  roomAcc: Joi.string().required(),
+  roomLocation: Joi.string().required(),
+  cincoutInfo: Joi.string().required(),
+  tempBoard: Joi.string().required(),
+  roomNo: Joi.string().required(),
 });
 
 /**
- * 
+ *
  * @route GET /filterRoom?checkin={}&checkout={}&location={}
- * @param {*} req 
- * @param {*} res 
+ * @param {*} req
+ * @param {*} res
  * @returns sorted array by room_acc and room_location for website bookings
  */
 exports.filterRoom = async (req, res) => {
-
-  if (!req.query.checkin || !req.query.checkout || !req.query.location) return res.status(400).send("Bad Request")
+  if (!req.query.checkin || !req.query.checkout || !req.query.location)
+    return res.status(400).send("Bad Request");
 
   try {
-    const rooms = await getAvailableRooms(req.query.checkin, req.query.checkout, req.query.location);
+    const rooms = await getAvailableRooms(
+      req.query.checkin,
+      req.query.checkout,
+      req.query.location
+    );
 
-    var roomAcc_temp = '';
-    var roomLocation = '';
+    var roomAcc_temp = "";
+    var roomLocation = "";
     var dataCount = [];
 
     if (rooms.length > 0) {
       var merged_array = rooms;
-      var data = []
+      var data = [];
       for (var key in merged_array) {
-        if (roomAcc_temp === '' || roomLocation === '') {
+        if (roomAcc_temp === "" || roomLocation === "") {
           roomAcc_temp = merged_array[key]["room_acc"];
           roomLocation = merged_array[key]["room_location"];
           data.push(merged_array[key]);
-        } else if (roomAcc_temp === merged_array[key]["room_acc"] && roomLocation === merged_array[key]["room_location"]) {
+        } else if (
+          roomAcc_temp === merged_array[key]["room_acc"] &&
+          roomLocation === merged_array[key]["room_location"]
+        ) {
           data.push(merged_array[key]);
-        } else if (roomAcc_temp !== merged_array[key]["room_acc"] || roomLocation !== merged_array[key]["room_location"]) {
+        } else if (
+          roomAcc_temp !== merged_array[key]["room_acc"] ||
+          roomLocation !== merged_array[key]["room_location"]
+        ) {
           roomAcc_temp = merged_array[key]["room_acc"];
           roomLocation = merged_array[key]["room_location"];
           dataCount.push(data);
@@ -59,21 +99,20 @@ exports.filterRoom = async (req, res) => {
       if (data.length >= 1) {
         dataCount.push(data);
       }
-      res.status(200).send(dataCount)
+      res.status(200).send(dataCount);
     } else {
       res.send({ msg: "No room available" });
     }
   } catch (error) {
     console.log(error);
   }
-
 };
 
 /**
- * 
+ *
  * @route POST /releaseRoom
- * @param {*} req req.body.roomId 
- * @param {*} res 
+ * @param {*} req req.body.roomId
+ * @param {*} res
  * @returns msg if room is released
  */
 
@@ -93,10 +132,10 @@ exports.releaseRoom = async (req, res) => {
 };
 
 /**
- * 
+ *
  * @route POST /holdRoom
- * @param {*} req req.body.roomId 
- * @param {*} res 
+ * @param {*} req req.body.roomId
+ * @param {*} res
  * @returns holds room for 5 minutes
  */
 exports.holdRoom = async (req, res) => {
@@ -109,41 +148,39 @@ exports.holdRoom = async (req, res) => {
     } else {
       res.status(400).send({ msg: "Room not holded", error: result });
     }
-
   } catch (error) {
     console.log(error);
   }
-
 };
 
 /**
- * 
+ *
  * @route POST /tempRes
  * @param {Reques} req req.body.data
- * @param {Response} res 
- * @returns 
+ * @param {Response} res
+ * @returns
  * @description temporary reservation until payment is confirmed
  * @todo add payment confirmation
  * @todo add email confirmation
  */
 
 exports.tempRes = async (req, res) => {
-  if (!req.body) return res.status(400).send("Bad Request");
+  if (!req.body.regesterObject) return res.status(400).send("Bad Request");
 
-  const {error} = schema.validate(req.body)
-
+  const { error } = schema.validate(req.body.regesterObject);
+  console.log("here in oiu");
+  console.log(req.body.regesterObject);
   if (error) {
-    return res.status(400).send(error.details[0].message)
-  }else {
-    return res.status(200).send("success")
+    return res.status(400).send(error.details[0].message);
+  } else {
+    try {
+      const result = await tempRes(req.body.regesterObject);
+      return res.status(200).send("success Regesterd");
+    } catch (error) {
+      return res.status(500).send(error);
+    }
   }
-  // try {
-  //   const result = await tempRes(req.body.data);
-  // } catch (error) {
-
-  // }
-}
-
+};
 
 exports.calculateRoomPrice = async (req, res) => {
   console.log(req.body.cart);
@@ -151,20 +188,19 @@ exports.calculateRoomPrice = async (req, res) => {
   const cart = req.body.cart;
 
   try {
-
-    var promo = '';
-    var price = 0.00;
-    var dbRack = 0.00;
-    var dbWeekend = 0.00;
-    var dbWeekdays = 0.00;
-    var dbMember = 0.00;
+    var promo = "";
+    var price = 0.0;
+    var dbRack = 0.0;
+    var dbWeekend = 0.0;
+    var dbWeekdays = 0.0;
+    var dbMember = 0.0;
     var arrayTemp = [];
 
     // Single occupancy rate
-    var sRack = 0.00;
-    var sWeekend = 0.00;
-    var sWeekdays = 0.00;
-    var sMember = 0.00;
+    var sRack = 0.0;
+    var sWeekend = 0.0;
+    var sWeekdays = 0.0;
+    var sMember = 0.0;
 
     for (const val of cart) {
       var cartRoomType = val.room_acc;
@@ -178,7 +214,7 @@ exports.calculateRoomPrice = async (req, res) => {
       var end = new Date(val.checkout);
 
       while (start < end) {
-        days.push(start.toLocaleString('en-us', { weekday: 'long' }));
+        days.push(start.toLocaleString("en-us", { weekday: "long" }));
         start.setDate(start.getDate() + 1);
       }
 
@@ -218,24 +254,51 @@ exports.calculateRoomPrice = async (req, res) => {
           } else {
             switch (day) {
               case "Friday":
-                price += calculatePrice(ad, kid, teen, sWeekend, dbWeekend, dbMember, sMember, promo);
+                price += calculatePrice(
+                  ad,
+                  kid,
+                  teen,
+                  sWeekend,
+                  dbWeekend,
+                  dbMember,
+                  sMember,
+                  promo
+                );
                 break;
               case "Saturday":
-                price += calculatePrice(ad, kid, teen, sRack, dbRack, dbMember, sMember, promo);
+                price += calculatePrice(
+                  ad,
+                  kid,
+                  teen,
+                  sRack,
+                  dbRack,
+                  dbMember,
+                  sMember,
+                  promo
+                );
                 break;
               default:
-                price += calculatePrice(ad, kid, teen, sWeekdays, dbWeekdays, dbMember, sMember, promo);
+                price += calculatePrice(
+                  ad,
+                  kid,
+                  teen,
+                  sWeekdays,
+                  dbWeekdays,
+                  dbMember,
+                  sMember,
+                  promo
+                );
                 break;
             }
           }
         }
-      } else if (location === 'awash') {
+      } else if (location === "awash") {
         var Bored = val.reservationBoard;
         var result_type = await getAwashPrice(cartRoomType);
 
         var row_type = result_type[0];
         price = calculatePriceAwash(ad, kid, teen, Bored, days, row_type);
-      } else if (location == 'entoto') {
+      } else if (location == "entoto") {
         var result_type = await getEntotoPrice(cartRoomType);
 
         var row_type = result_type[0];
@@ -260,15 +323,11 @@ exports.calculateRoomPrice = async (req, res) => {
         });
       }
       arrayTemp.push(price);
-      price = 0.00;
+      price = 0.0;
     }
-    res.status(200).send({ price: arrayTemp })
+    res.status(200).send({ price: arrayTemp });
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: error });
   }
-
-
-
-}
-
+};
