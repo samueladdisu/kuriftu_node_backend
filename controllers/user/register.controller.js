@@ -1,5 +1,6 @@
 const db = require("../../util/db");
 const axios = require("axios");
+const { chapaPayment } = require("../../models/user/payment.model");
 
 /**
  *
@@ -18,6 +19,34 @@ const generateRandomString = (length) => {
     result += characters.charAt(Math.floor(Math.random() * characters.length));
   }
   return result;
+};
+
+CurrencyConverter = async () => {
+  try {
+    const response = await axios.get(
+      "https://api.apilayer.com/exchangerates_data/convert",
+      {
+        params: {
+          to: "ETB",
+          from: "USD",
+          amount: 1,
+        },
+        headers: {
+          "Content-Type": "text/plain",
+          apikey: "LTihJp3B4eDMs0JZQE1acsH4y4Iq15oh",
+        },
+      }
+    );
+
+    if (response.data.success) {
+      return response.data.result;
+    } else {
+      return 20;
+    }
+  } catch (error) {
+    console.error(error);
+    return 20;
+  }
 };
 
 exports.registerCustomer = async (req, res) => {
@@ -89,12 +118,6 @@ exports.registerCustomer = async (req, res) => {
 
     const created_at = new Date().toISOString();
 
-    // const originalArray = [
-    //     { id: 1, name: 'John' },
-    //     { id: 2, name: 'Jane' },
-    //     { id: 3, name: 'Bob' }
-    //   ];
-
     const obj = req.body.form;
     const updatedObj = {};
 
@@ -119,7 +142,6 @@ exports.registerCustomer = async (req, res) => {
     updatedObj["tempBoard"] = boardeArrs;
     updatedObj["roomNo"] = roomNums;
 
-
     console.log(updatedObj);
     try {
       const responseRegister = await axios.post(
@@ -131,21 +153,22 @@ exports.registerCustomer = async (req, res) => {
 
       console.log("Registerd Response ", responseRegister.data);
 
-      if (req.body.form.guestPaymentMethod == 'credit'){
-
-      }else if (req.body.form.guestPaymentMethod == 'amole'){
-
-      }else if (req.body.form.guestPaymentMethod == 'helloCash'){
-
-      }else if (req.body.form.guestPaymentMethod == 'telebirr'){
-
-      }else if (req.body.form.guestPaymentMethod == 'paypal'){
-
-      } else if (req.body.form.guestPaymentMethod == 'Abisinya'){
-
-      }else {
-      res.status(400).send("payment selected error");
-
+      if (req.body.form.guestPaymentMethod == "credit") {
+      } else if (req.body.form.guestPaymentMethod == "amole") {
+        var paymentMe = await chapaPayment("ETB", updatedObj, 20);
+        console.log(paymentMe);
+      } else if (req.body.form.guestPaymentMethod == "helloCash") {
+        var paymentMe = await chapaPayment("ETB", updatedObj, 20);
+        console.log(paymentMe);
+      } else if (req.body.form.guestPaymentMethod == "telebirr") {
+      } else if (req.body.form.guestPaymentMethod == "paypal") {
+        var paymentMe = await chapaPayment("ETB", updatedObj, 20);
+      } else if (req.body.form.guestPaymentMethod == "Abisinya") {
+        var paymentMe = await chapaPayment("ETB".updatedObj, 20);
+        console.log(paymentMe);
+      } else {
+        console.log("here not payed")
+        res.status(400).send("payment selected error");
       }
     } catch (error) {
       // console.error(error);

@@ -9,7 +9,8 @@ module.exports = {
   NODE_ENV: process.env.NODE_ENV || "development",
   HOST: process.env.HOST || "localhost",
   PORT: process.env.PORT || 4000,
-  DBNAME: process.env.DBNAME ,
-  DBUSER: process.env.DBUSER ,
+  DBNAME: process.env.DBNAME,
+  DBUSER: process.env.DBUSER,
   DBPASSWORD: process.env.DBPASSWORD,
+  ChapaSEC: process.env.TEST_CHAPA,
 };

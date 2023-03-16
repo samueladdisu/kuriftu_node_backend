@@ -139,7 +139,8 @@ exports.releaseRoom = async (req, res) => {
  * @returns holds room for 5 minutes
  */
 exports.holdRoom = async (req, res) => {
-  if (!req.body.roomId) return res.status(400).send("Bad Request");
+  console.log(req.body.roomId);
+  if (!req.body.roomId) return res.status(400).send("Hold Bad Request");
 
   try {
     const result = await holdRoom(parseInt(req.body.roomId));

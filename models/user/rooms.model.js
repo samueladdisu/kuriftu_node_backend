@@ -71,14 +71,15 @@ const holdRoom = async (roomId) => {
       [roomId]
     );
 
-    let name = `Room_ID_${roomId}_Hold`;
+    // let name = `Room_ID_${roomId}_Hold`;
 
-    const eventSql = `CREATE EVENT IF NOT EXISTS ${name} ON SCHEDULE AT CURRENT_TIMESTAMP + INTERVAL  30 SECOND DO UPDATE rooms SET room_status = 'Not_booked' WHERE room_id = ${roomId}`;
+    // const eventSql = `CREATE EVENT IF NOT EXISTS ${name} ON SCHEDULE AT CURRENT_TIMESTAMP + INTERVAL  30 SECOND DO UPDATE rooms SET room_status = 'Not_booked' WHERE room_id = ${roomId}`;
 
-    const event = await db.query(eventSql);
+    // const event = await db.query(eventSql);
 
     return { msg: "Room holded" };
   } catch (error) {
+    console.log(error);
     return error;
   }
 };
