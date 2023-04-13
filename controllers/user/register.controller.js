@@ -1,6 +1,9 @@
 const db = require("../../util/db");
 const axios = require("axios");
-const { chapaPayment } = require("../../models/user/payment.model");
+const {
+  chapaPayment,
+  changetoETB,
+} = require("../../models/user/payment.model");
 
 /**
  *
@@ -81,7 +84,7 @@ exports.registerCustomer = async (req, res) => {
         console.log("price updated", responsepromo.data);
       } catch (error) {
         console.error("promo error");
-        res.status(500).send("Internal server error");
+        res.status(500).send("Promo Error");
       }
     }
 
@@ -142,7 +145,6 @@ exports.registerCustomer = async (req, res) => {
     updatedObj["tempBoard"] = boardeArrs;
     updatedObj["roomNo"] = roomNums;
 
-    console.log(updatedObj);
     try {
       const responseRegister = await axios.post(
         "http://localhost:4000/tempRes",
@@ -153,33 +155,73 @@ exports.registerCustomer = async (req, res) => {
 
       console.log("Registerd Response ", responseRegister.data);
 
+      if (
+        req.body.form.guestPaymentMethod == "helloCash" ||
+        req.body.form.guestPaymentMethod == "amole" ||
+        req.body.form.guestPaymentMethod == "telebirr" ||
+        req.body.form.guestPaymentMethod == "Abisinya"
+      ) {
+        try {
+          const answer = await changetoETB(totalPrice);
+          console.log("NEW Price", answer);
+          totalPrice = answer.toFixed(2);
+        } catch (error) {
+          res.status(500).send("Convertion To ETB Error");
+        }
+      }
+
       if (req.body.form.guestPaymentMethod == "credit") {
+        try {
+          const respo = await chapaPayment("USD", updatedObj, totalPrice);
+          res.status(200).send(respo);
+        } catch (error) {
+          res.status(500).send("Payment Error");
+        }
       } else if (req.body.form.guestPaymentMethod == "amole") {
-        var paymentMe = await chapaPayment("ETB", updatedObj, 20);
-        console.log(paymentMe);
+        try {
+          const respo = await chapaPayment("ETB", updatedObj, totalPrice);
+          res.status(200).send(respo);
+        } catch (error) {
+          res.status(500).send("Payment Error");
+        }
       } else if (req.body.form.guestPaymentMethod == "helloCash") {
-        var paymentMe = await chapaPayment("ETB", updatedObj, 20);
-        console.log(paymentMe);
+        try {
+          const respo = await chapaPayment("ETB", updatedObj, totalPrice);
+          res.status(200).send(respo);
+        } catch (error) {
+          res.status(500).send("Payment Error");
+        }
       } else if (req.body.form.guestPaymentMethod == "telebirr") {
       } else if (req.body.form.guestPaymentMethod == "paypal") {
-        var paymentMe = await chapaPayment("ETB", updatedObj, 20);
+        try {
+          const respo = await chapaPayment("USD", updatedObj, totalPrice);
+          res.status(200).send(respo);
+        } catch (error) {
+          res.status(500).send("Payment Error");
+        }
       } else if (req.body.form.guestPaymentMethod == "Abisinya") {
-        var paymentMe = await chapaPayment("ETB".updatedObj, 20);
-        console.log(paymentMe);
+        try {
+          const respo = await chapaPayment("ETB", updatedObj, totalPrice);
+          res.status(200).send(respo);
+        } catch (error) {
+          res.status(500).send("Payment Error");
+        }
       } else {
-        console.log("here not payed")
+        console.log("here not payed");
         res.status(400).send("payment selected error");
       }
     } catch (error) {
-      // console.error(error);
-      res.status(500).send("Internal server error");
+      console.error("Validation Error");
+      res.status(500).send("Validation Error");
     }
   } catch (error) {
     console.error(error);
-    res.status(500).send("Internal server error");
+    res.status(500).send("Invalid Cart");
   }
 
-  // step 4 send to payment provider selected
 
-  // step 5 send the link to front end
 };
+
+// module.exports = {
+//   generateRandomString,
+// };

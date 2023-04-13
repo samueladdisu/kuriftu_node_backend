@@ -26,7 +26,7 @@ const schema = Joi.object().keys({
   firstName: Joi.string().alphanum().min(3).max(30).required(),
   lastName: Joi.string().alphanum().min(3).max(30).required(),
   phoneNumber: Joi.string()
-    .regex(/^\+\d{10,}$/)
+    .regex(/^(?:\+?\d{10}|\d{1}[0]\d{7,8})$/) // .regex(/^\+\0\d{10,}$/)
     .required(),
   email: Joi.string().email({ minDomainSegments: 2 }).required(),
   country: Joi.string().required(),
@@ -139,7 +139,7 @@ exports.releaseRoom = async (req, res) => {
  * @returns holds room for 5 minutes
  */
 exports.holdRoom = async (req, res) => {
-  console.log(req.body.roomId);
+  console.log(req.body);
   if (!req.body.roomId) return res.status(400).send("Hold Bad Request");
 
   try {
@@ -172,12 +172,15 @@ exports.tempRes = async (req, res) => {
   console.log("here in oiu");
   console.log(req.body.regesterObject);
   if (error) {
+    console.log("temp1 error", error);
+
     return res.status(400).send(error.details[0].message);
   } else {
     try {
       const result = await tempRes(req.body.regesterObject);
       return res.status(200).send("success Regesterd");
     } catch (error) {
+      console.log("temp error", error);
       return res.status(500).send(error);
     }
   }
@@ -294,8 +297,11 @@ exports.calculateRoomPrice = async (req, res) => {
           }
         }
       } else if (location === "awash") {
-        // var Bored = val.reservationBoard;
-        var Bored = req.body.dataBin; 
+        console.log("AWASH");
+
+        var Bored = val.reservationBoard;
+        console.log("BOARDE", Bored);
+
         var result_type = await getAwashPrice(cartRoomType);
 
         var row_type = result_type[0];
