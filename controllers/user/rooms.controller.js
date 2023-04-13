@@ -294,10 +294,12 @@ exports.calculateRoomPrice = async (req, res) => {
           }
         }
       } else if (location === "awash") {
-        var Bored = val.reservationBoard;
+        // var Bored = val.reservationBoard;
+        var Bored = req.body.dataBin; 
         var result_type = await getAwashPrice(cartRoomType);
 
         var row_type = result_type[0];
+        console.log("inputs", Bored);
         price = calculatePriceAwash(ad, kid, teen, Bored, days, row_type);
       } else if (location == "entoto") {
         var result_type = await getEntotoPrice(cartRoomType);
