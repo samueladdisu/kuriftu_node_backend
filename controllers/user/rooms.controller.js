@@ -35,7 +35,8 @@ const schema = Joi.object().keys({
   city: Joi.string().required(),
   specialRequest: Joi.string().min(0).max(200).optional(),
   zip: Joi.string()
-    .regex(/^\d{5}$/)
+    .regex(/^[a-zA-Z0-9\- ]+$/)
+    .max(10)
     .required(),
   paymentMethod: Joi.string().max(30).required(),
   price: Joi.number().required(),
