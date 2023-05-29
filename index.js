@@ -11,23 +11,21 @@ moment.tz.setDefault("Africa/Addis_Ababa");
 
 const app = express();
 
-// app.use(cors());
+app.use(cors());
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: "https://kurifturesorts.com",
     credentials: true,
   })
 );
-app.use(bodyParser.json());
-
 app.use(
   helmet.contentSecurityPolicy({
     directives: {
-      defaultSrc: ["'self'", "http://localhost:8000"],
+      defaultSrc: ["'self'", "http://localhost:4000"],
     },
   })
 );
-
+app.use(bodyParser.json());
 app.use((error, req, res, next) => {
   if (error instanceof SyntaxError && error.status === 400 && "body" in error) {
     console.error(`Error parsing JSON data: ${error.message}`);

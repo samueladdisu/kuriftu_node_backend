@@ -37,7 +37,7 @@ const changetoETB = async (price) => {
         .catch((error) => error);
     }
   } catch (error) {
-    console.log(error);
+    
     return error;
   }
 };

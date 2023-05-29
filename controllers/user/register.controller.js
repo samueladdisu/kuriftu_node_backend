@@ -23,35 +23,6 @@ const generateRandomString = (length) => {
   }
   return result;
 };
-
-CurrencyConverter = async () => {
-  try {
-    const response = await axios.get(
-      "https://api.apilayer.com/exchangerates_data/convert",
-      {
-        params: {
-          to: "ETB",
-          from: "USD",
-          amount: 1,
-        },
-        headers: {
-          "Content-Type": "text/plain",
-          apikey: "LTihJp3B4eDMs0JZQE1acsH4y4Iq15oh",
-        },
-      }
-    );
-
-    if (response.data.success) {
-      return response.data.result;
-    } else {
-      return 20;
-    }
-  } catch (error) {
-    console.error(error);
-    return 20;
-  }
-};
-
 exports.registerCustomer = async (req, res) => {
   if (!req.body.form || !req.body.cart || !req.body.total)
     return res.status(400).send("Bad Request");
@@ -166,7 +137,7 @@ exports.registerCustomer = async (req, res) => {
           console.log("NEW Price", answer);
           totalPrice = answer.toFixed(2);
         } catch (error) {
-          res.status(500).send("Convertion To ETB Error");
+          res.status(500).send("Convertion To ETB Error Please Try again");
         }
       }
 
