@@ -35,7 +35,8 @@ const schema = Joi.object().keys({
   city: Joi.string().required(),
   specialRequest: Joi.string().min(0).max(200).optional(),
   zip: Joi.string()
-    .regex(/^\d{5}$/)
+    .regex(/^[a-zA-Z0-9\- ]+$/)
+    .max(10)
     .required(),
   paymentMethod: Joi.string().max(30).required(),
   price: Joi.number().required(),
@@ -172,12 +173,15 @@ exports.tempRes = async (req, res) => {
   console.log("here in oiu");
   console.log(req.body.regesterObject);
   if (error) {
+    console.log("temp1 error", error);
+
     return res.status(400).send(error.details[0].message);
   } else {
     try {
       const result = await tempRes(req.body.regesterObject);
       return res.status(200).send("success Regesterd");
     } catch (error) {
+      console.log("temp error", error);
       return res.status(500).send(error);
     }
   }
@@ -302,6 +306,7 @@ exports.calculateRoomPrice = async (req, res) => {
         var result_type = await getAwashPrice(cartRoomType);
 
         var row_type = result_type[0];
+        console.log("inputs", Bored);
         price = calculatePriceAwash(ad, kid, teen, Bored, days, row_type);
       } else if (location == "entoto") {
         var result_type = await getEntotoPrice(cartRoomType);
