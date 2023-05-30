@@ -21,7 +21,7 @@ app.use(
 app.use(
   helmet.contentSecurityPolicy({
     directives: {
-      defaultSrc: ["'self'", "http://localhost:4000"],
+      defaultSrc: ["'self'", "https://kurifturesorts.com"],
     },
   })
 );
