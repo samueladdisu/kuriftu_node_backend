@@ -59,7 +59,7 @@ const chapaPayment = async (guestCur, guestInfo, price) => {
     phone_number: guestInfo.phoneNumber,
     tx_ref: guestInfo.userGID,
     // callback_url: "https://webhook.site/077164d6-29cb-40df-ba29-8a00e59a7e60",
-    return_url: "https://www.google.com/",
+    return_url: "https://kurifturesorts.com/",
     "customization[title]": "Room Reservation",
     "customization[description]": "I love online payments",
   };
